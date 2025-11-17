@@ -38,36 +38,16 @@ jobs:
               -i v1.mp4 \
               -i v2.mp4 \
               -filter_complex " \
-                  /* --- Setup: Scale inputs to 720p and set SAR --- */ \
                   [0:v]scale=1280:720,setsar=1[v1_base]; \
                   [1:v]scale=1280:720,setsar=1[v2_base]; \
-                  \
-                  /* --- Video 1 (Foreground) Processing --- */ \
-                  \
-                  /* 1. Edge detection (outputs grayscale: edges=white, bg=black) */ \
                   [v1_base]edgedetect=intensity=0.7[edges]; \
-                  \
-                  /* 2. Colorization: Map white (1.0) to rust color (R=0.54, G=0.27, B=0.07) */ \
-                  /* and keep black (0.0) as black (0,0,0) */ \
                   [edges]format=rgba, \
                          colorchannelmixer=rr=0.54:gr=0:br=0: \
                                          rg=0:gg=0.27:bg=0: \
                                          rb=0:gb=0:bb=0.07[rust_color]; \
-                  \
-                  /* 3. Extreme afterimage effect using feedback */ \
-                  /* Mixes 20% of the current frame with 80% of the previous frame */ \
                   [rust_color]feedback=d=1:a=0.2:b=0.8[feedback_out]; \
-                  \
-                  /* 4. Chroma key: Make the black background transparent */ \
-                  /* blend=0.05 slightly softens the edges */ \
                   [feedback_out]format=rgba,chromakey=color=black:similarity=0.1:blend=0.05[chroma_out]; \
-                  \
-                  /* 5. Slight transparency (Requested '少々の透過') */ \
-                  /* Set overall opacity to 75% */ \
                   [chroma_out]colorchannelmixer=aa=0.75[v1_final]; \
-                  \
-                  /* --- Composite --- */ \
-                  /* Overlay the processed v1 onto v2 */ \
                   [v2_base][v1_final]overlay=0:0:format=auto,format=yuv420p[final_video] \
               " \
               -map "[final_video]" \
