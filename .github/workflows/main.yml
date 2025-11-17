@@ -45,7 +45,7 @@ jobs:
                          colorchannelmixer=rr=0.54:gr=0:br=0: \
                                          rg=0:gg=0.27:bg=0: \
                                          rb=0:gb=0:bb=0.07[rust_color]; \
-                  [rust_color]feedback=d=1:a=0.2:b=0.8[feedback_out]; \
+                  [rust_color]feedback=a=0.2:b=0.8[feedback_out]; \
                   [feedback_out]format=rgba,chromakey=color=black:similarity=0.1:blend=0.05[chroma_out]; \
                   [chroma_out]colorchannelmixer=aa=0.75[v1_final]; \
                   [v2_base][v1_final]overlay=0:0:format=auto,format=yuv420p[final_video] \
