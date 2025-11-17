@@ -52,14 +52,7 @@ jobs:
             -i v1.mp4 \
             -filter_complex " \
               [0:v]scale=1280:720,setsar=1[v1_base]; \
-              [v1_base]edgedetect=mode=canny[edges]; \
-              [edges]format=rgba, \
-                     colorchannelmixer=rr=0.54:gr=0:br=0: \
-                                     rg=0:gg=0.27:bg=0: \
-                                     rb=0:gb=0:bb=0.07[rust_color]; \
-              [rust_color]hueshift=h='mod(n*50, 360)'[color_glitch]; \
-              [color_glitch]tblend=all_expr='max(A*0.98, B*0.7)'[afterimage]; \
-              [afterimage]curves=all='0/0 0.5/1 1/1'[final_video] \
+              [v1_base]geq=r='p(X,mod(Y+n*10,720))':g='p(X,mod(Y+n*12,720))':b='p(X,mod(Y+n*14,720))'[final_video] \
             " \
             -map "[final_video]" -map "0:a?" \
             -c:v libx264 -preset fast -crf 23 \
