@@ -42,7 +42,7 @@ jobs:
       - name: Download Video
         run: |
           echo "Downloading v1 (ssstwitter)..."
-          wget -q -O v1.mp4 "https://github.com/Emon2358/4949downloader/blob/main/downloads/sm2732030.mp4?raw=true"
+          wget -q -O v1.mp4 "https://github.com/Emon2358/4949downloader/blob/main/downloads/ssstwitter.com_1759535411922.mp4?raw=true"
           echo "Download complete."
 
       - name: Run Video Processing (Intense Effect)
