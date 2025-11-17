@@ -15,15 +15,29 @@ jobs:
         run: |
           echo "Downloading ffmpeg..."
           mkdir -p ffmpeg_static
-          # ジョン・ヴァン・シックルのURLから、より安定したGitHubリリースのURLに変更
           wget -q https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-linux64-gpl.tar.xz -O ffmpeg.tar.xz
           echo "Extracting ffmpeg..."
-          # ダウンロードしたファイル名 'ffmpeg.tar.xz' を指定して展開
           tar -xf ffmpeg.tar.xz -C ffmpeg_static --strip-components=1
-          echo "Adding ffmpeg to PATH..."
-          echo "$PWD/ffmpeg_static" >> $GITHUB_PATH
+          
+          echo "Listing extracted files:"
+          ls -R ffmpeg_static
+          
+          # 'ffmpeg'実行ファイルを探し、その親ディレクトリを取得
+          FFMPEG_DIR=$(find $PWD/ffmpeg_static -type f -name ffmpeg -exec dirname {} \;)
+          
+          if [ -z "$FFMPEG_DIR" ]; then
+            echo "Error: ffmpeg executable not found after extraction."
+            exit 1
+          fi
+          
+          echo "Found ffmpeg in: $FFMPEG_DIR"
+          echo "Adding $FFMPEG_DIR to PATH..."
+          # 実行ファイルが含まれるディレクトリをPATHに追加
+          echo "$FFMPEG_DIR" >> $GITHUB_PATH
+          
           echo "FFmpeg version:"
-          ./ffmpeg_static/ffmpeg -version
+          # 見つけたパスから直接実行してバージョン確認
+          $FFMPEG_DIR/ffmpeg -version
 
       - name: Download Video
         run: |
