@@ -12,10 +12,26 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install ffmpeg
+      - name: Install ffmpeg (Static Build)
         run: |
-          sudo apt-get update
-          sudo apt-get install -y ffmpeg
+          echo "Downloading and installing ffmpeg static build..."
+          # 信頼できるソースから最新のffmpeg静的ビルドをダウンロードします
+          wget https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz -O ffmpeg-release.tar.xz
+          
+          # 展開用のディレクトリを作成
+          mkdir ffmpeg_static
+          
+          # tarアーカイブを展開し、ffmpegバイナリを `ffmpeg_static` ディレクトリに直接配置します
+          # --strip-components=1 は、アーカイブ内の一階層目のディレクトリを無視して中身だけを取り出します
+          tar -xf ffmpeg-release.tar.xz -C ffmpeg_static --strip-components=1
+          
+          # 実行ファイル `ffmpeg` があるディレクトリ（$PWD/ffmpeg_static）を
+          # このジョブの環境変数PATHに追加します
+          echo "$PWD/ffmpeg_static" >> $GITHUB_PATH
+          
+          # インストールされたバージョンを確認
+          echo "FFmpeg version:"
+          ffmpeg -version
 
       - name: Run Video Processing
         run: |
