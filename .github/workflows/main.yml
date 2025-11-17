@@ -42,7 +42,7 @@ jobs:
       - name: Download Video
         run: |
           echo "Downloading v1 (ssstwitter)..."
-          wget -q -O v1.mp4 "https://github.com/Emon2358/4949downloader/blob/main/downloads/ssstwitter.com_1759535411922.mp4?raw=true"
+          wget -q -O v1.mp4 "https://github.com/Emon2358/4949downloader/blob/main/downloads/sm2732030.mp4?raw=true"
           echo "Download complete."
 
       - name: Run Video Processing (Intense Effect)
@@ -57,7 +57,8 @@ jobs:
                      colorchannelmixer=rr=0.54:gr=0:br=0: \
                                      rg=0:gg=0.27:bg=0: \
                                      rb=0:gb=0:bb=0.07[rust_color]; \
-              [rust_color]tblend=all_expr='max(A*0.98, B*0.7)'[afterimage]; \
+              [rust_color]hueshift=h='mod(n*50, 360)'[color_glitch]; \
+              [color_glitch]tblend=all_expr='max(A*0.98, B*0.7)'[afterimage]; \
               [afterimage]curves=all='0/0 0.5/1 1/1'[final_video] \
             " \
             -map "[final_video]" -map "0:a?" \
