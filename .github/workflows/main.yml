@@ -40,7 +40,7 @@ jobs:
               -filter_complex " \
                   [0:v]scale=1280:720,setsar=1[v1_base]; \
                   [1:v]scale=1280:720,setsar=1[v2_base]; \
-                  [v1_base]edgedetect=intensity=0.7[edges]; \
+                  [v1_base]edgedetect=low=0.3:high=0.7[edges]; \
                   [edges]format=rgba, \
                          colorchannelmixer=rr=0.54:gr=0:br=0: \
                                          rg=0:gg=0.27:bg=0: \
