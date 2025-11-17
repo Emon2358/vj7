@@ -26,12 +26,14 @@ jobs:
           tar -xf ffmpeg-release.tar.xz -C ffmpeg_static --strip-components=1
           
           # 実行ファイル `ffmpeg` があるディレクトリ（$PWD/ffmpeg_static）を
-          # このジョブの環境変数PATHに追加します
+          # このジョブの環境変数PATHに追加します（次のステップで有効になります）
           echo "$PWD/ffmpeg_static" >> $GITHUB_PATH
           
           # インストールされたバージョンを確認
+          # $GITHUB_PATHの変更はこのステップ内では即時反映されないため、
+          # フルパス（相対パス）で直接実行ファイルを指定します。
           echo "FFmpeg version:"
-          ffmpeg -version
+          ./ffmpeg_static/ffmpeg -version
 
       - name: Run Video Processing
         run: |
