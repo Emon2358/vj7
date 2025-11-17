@@ -1,11 +1,10 @@
-name: Advanced Video Effects Workflow
+name: Intense Afterimage Effect
 
-# This workflow can be triggered manually from the Actions tab
 on:
   workflow_dispatch:
 
 jobs:
-  build:
+  process-video:
     runs-on: ubuntu-latest
 
     steps:
@@ -14,72 +13,44 @@ jobs:
 
       - name: Install ffmpeg (Static Build)
         run: |
-          echo "Downloading and installing ffmpeg static build..."
-          # 信頼できるソースから最新のffmpeg静的ビルドをダウンロードします
-          wget https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz -O ffmpeg-release.tar.xz
-          
-          # 展開用のディレクトリを作成
-          mkdir ffmpeg_static
-          
-          # tarアーカイブを展開し、ffmpegバイナリを `ffmpeg_static` ディレクトリに直接配置します
-          # --strip-components=1 は、アーカイブ内の一階層目のディレクトリを無視して中身だけを取り出します
-          tar -xf ffmpeg-release.tar.xz -C ffmpeg_static --strip-components=1
-          
-          # 実行ファイル `ffmpeg` があるディレクトリ（$PWD/ffmpeg_static）を
-          # このジョブの環境変数PATHに追加します（次のステップで有効になります）
+          echo "Downloading ffmpeg..."
+          mkdir -p ffmpeg_static
+          wget -q https://johnvansickle.com/ffmpeg/builds/ffmpeg-release-amd64-static.tar.xz
+          echo "Extracting ffmpeg..."
+          tar -xf ffmpeg-release-amd64-static.tar.xz -C ffmpeg_static --strip-components=1
+          echo "Adding ffmpeg to PATH..."
           echo "$PWD/ffmpeg_static" >> $GITHUB_PATH
-          
-          # インストールされたバージョンを確認
-          # $GITHUB_PATHの変更はこのステップ内では即時反映されないため、
-          # フルパス（相対パス）で直接実行ファイルを指定します。
           echo "FFmpeg version:"
           ./ffmpeg_static/ffmpeg -version
 
-      - name: Run Video Processing
+      - name: Download Video
         run: |
-          set -ex
+          echo "Downloading v1 (ssstwitter)..."
+          wget -q -O v1.mp4 "https://github.com/Emon2358/4949downloader/blob/main/downloads/ssstwitter.com_1759535411922.mp4?raw=true"
+          echo "Download complete."
 
-          # 1. Define Video URLs
-          # Convert GitHub blob URLs to raw content URLs
-          VIDEO1_URL="https://raw.githubusercontent.com/Emon2358/4949downloader/main/downloads/ssstwitter.com_1759535411922.mp4"
-          VIDEO2_URL="https://raw.githubusercontent.com/Emon2358/4949downloader/main/downloads/sm21151533.mp4"
-
-          # 2. Download Videos
-          echo "Downloading videos..."
-          wget -O v1.mp4 "$VIDEO1_URL"
-          wget -O v2.mp4 "$VIDEO2_URL"
-          echo "Downloads complete."
-
-          # 3. Run FFmpeg processing
+      - name: Run Video Processing (Intense Effect)
+        run: |
           echo "Starting FFmpeg processing..."
           ffmpeg -y \
-              -i v1.mp4 \
-              -i v2.mp4 \
-              -filter_complex " \
-                  [0:v]scale=1280:720,setsar=1[v1_base]; \
-                  [1:v]scale=1280:720,setsar=1[v2_base]; \
-                  [v1_base]edgedetect=low=0.3:high=0.7[edges]; \
-                  [edges]format=rgba, \
-                         colorchannelmixer=rr=0.54:gr=0:br=0: \
-                                         rg=0:gg=0.27:bg=0: \
-                                         rb=0:gb=0:bb=0.07[rust_color]; \
-                  [rust_color]tblend=all_expr='A*0.8+B*0.2'[feedback_out]; \
-                  [feedback_out]format=rgba,chromakey=color=black:similarity=0.1:blend=0.05[chroma_out]; \
-                  [chroma_out]colorchannelmixer=aa=0.75[v1_final]; \
-                  [v2_base][v1_final]overlay=0:0:format=auto,format=yuv420p[final_video] \
-              " \
-              -map "[final_video]" \
-              -map 1:a? \
-              -c:v libx264 -preset fast -crf 23 \
-              -c:a aac -b:a 192k \
-              -shortest \
-              processed_video.mp4
-
+            -i v1.mp4 \
+            -filter_complex " \
+              [0:v]scale=1280:720,setsar=1[v1_base]; \
+              [v1_base]edgedetect=mode=canny[edges]; \
+              [edges]format=rgba, \
+                     colorchannelmixer=rr=0.54:gr=0:br=0: \
+                                     rg=0:gg=0.27:bg=0: \
+                                     rb=0:gb=0:bb=0.07[rust_color]; \
+              [rust_color]tblend=all_expr='A*0.9+B*0.1'[final_video] \
+            " \
+            -map "[final_video]" -map "0:a?" \
+            -c:v libx264 -preset fast -crf 23 \
+            -c:a aac -b:a 192k -shortest \
+            processed_video.mp4
           echo "FFmpeg processing complete."
 
-      - name: Upload Processed Video
+      - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: processed-video
           path: processed_video.mp4
-          retention-days: 7 # Keep the artifact for 7 days
